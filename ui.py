@@ -118,8 +118,8 @@ class LauncherWindow(QWidget):
             self.close()
 
     def focusOutEvent(self,event):
-        # self.close()
-        pass
+        self.close()
+        # pass
 
         
 # Create an PyQT4 application object.
