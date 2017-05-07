@@ -28,11 +28,11 @@ class GenericWorker(QObject):
 
 def getResults(w,txt):
     
-    print "\nplug:", QThread.currentThreadId()
+    # print "\nplug:", QThread.currentThreadId()
     results = []
     txt = str(txt)
-    if txt.strip() == "" :
-        w.bg_thread.emit(SIGNAL('update'), results)
+    if len(txt.strip())==0 :
+        w.bg_thread.emit(SIGNAL('update'), results,"all")
     else:
         results= applications.query(txt)
         results.append(terminal.query(txt))
@@ -62,7 +62,13 @@ class LauncherWindow(QWidget):
             self.plugins = results
         elif Type == "files":
             self.files = results
+        elif Type == "all":
+            self.files = results
+            self.plugins =results
             
+        self.selected = 0
+        self.visibleStart = 0
+        self.visibleEnd = 5
         self.updateUi()
         
     def initUi(self):
@@ -82,43 +88,65 @@ class LauncherWindow(QWidget):
         self.setLayout(self.layout)
         self.searchBox.setMinimumSize(QSize(630,50))
         self.setFocusPolicy(Qt.StrongFocus)
+        self.visibleStart = 0
+        self.visibleEnd = 5
         
     def center(self):
         self.move(QApplication.desktop().screen().rect().center()- self.rect().center())
-
+        
     def textChanged(self, text):
-        print "gui :", QThread.currentThreadId()
-
+        # print "gui :", QThread.currentThreadId()
+        
         wk = GenericWorker(getResults, self,text)
         wk.connect_()
         wk.moveToThread(self.bg_thread)
         wk.start.emit(text)
         if str(text).startswith("file:") and str(text).endswith(" "):
             file.query(self,text[5:])
-
+            
     def updateUi(self):
-
         results =  self.plugins + self.files
 
         l = len(results)
-        print l
-        self.selected = 0
+        # print l
         for i in range(5):
-            if i < l :
-                self.items[i].changeItem(results[i],i==self.selected)
+            if i < l  and self.visibleStart+i < l:
+                self.items[i].changeItem(results[self.visibleStart+i],i==self.selected)
                 self.items[i].show()
             elif i>=l or l == 0:
                 self.items[i].hide()
 
-        if self.visibleResults > l:
+        if (self.visibleEnd-self.visibleStart) > l:
             self.adjustSize()
 
-        # print results,self.visibleResults, len(results)    
-        self.visibleResults = min(5,l)
+        self.visibleEnd = min(5,l)
+        # print results,self.visibleResults, len(results)
 
+    def goDown(self):
+        if len(self.files+self.plugins)> self.selected:
+                if self.selected>=5:
+                    self.visibleEnd += 1
+                    self.visibleStart +=1
+                    self.updateUi()
+        else:
+            self.selected -=1
+
+        self.selectItem()
+
+    def goUp(self):
+        if self.selected<self.visibleStart:
+            if len(self.files+self.plugins)> self.selected:
+                self.visibleEnd -= 1
+                self.visibleStart -=1
+                self.updateUi()
+            else:
+                self.selected -=1
+
+        self.selectItem()
+        
     def selectItem(self):
         for i in range(5):
-            self.items[i].selectItem(i==self.selected)
+            self.items[i].selectItem(i==(self.selected-self.visibleStart))
             
     def keyPressEvent(self,event):
         # Escape key
@@ -127,18 +155,23 @@ class LauncherWindow(QWidget):
             # Up key
         if event.key() == 0x01000013 :
             self.selected = max ( 0, self.selected -1 )
-            self.selectItem()
+            self.goUp()
 
             # Down key
         if event.key() == 0x01000015 :
-            self.selected = min(self.visibleResults-1,self.selected +1)
-            self.selectItem()
+            self.selected = min (len(self.plugins + self.files),self.selected+1)
+            self.goDown()
 
         # enter key
         if event.key() == 0x01000004 :
-            self.items[self.selected].execute()
+            if event.matches(QKeySequence.InsertLineSeparator):
+                self.items[self.selected].execute(shift=True)
+            else:           
+                self.items[self.selected].execute()
+
             self.close()
 
+            
     def focusOutEvent(self,event):
         self.close()
         # pass

@@ -32,6 +32,7 @@ def query(w,txt):
     txt = txt.replace(' ','')
     wk = GenericWorker(searchFiles, w,txt)
     wk.moveToThread(QThread.currentThread())
+    # wk.moveToThread(w.bg_thread2)
     wk.start.connect(wk.run)
     wk.start.emit("start")
     return True
@@ -46,7 +47,7 @@ def searchFiles(w,txt):
     for line in iter(out.stdout.readline,''):
         i += 1
         filelist.append(line.replace('\n',''))
-        if i == 5:
+        if i == 30:
             out.kill()
             break
         # Save found files to list
