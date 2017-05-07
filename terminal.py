@@ -5,11 +5,15 @@ def query(txt):
     result['Icon'] = applications.icon_fullpath('terminal')
     return result
 
-def execute(command):
+def execute(command,shift=False):
     import os
     # Popen(app['Exec'] + " &")
     # x-terminal-emulator -e "zsh -c \"apropos editor; exec zsh\""
-    cmd = str('nohup zsh -ci \''+command["Command"] + ' ; exec zsh \' &')
+    if shift:
+        cmd = str('nohup x-terminal-emulator -e \"zsh -ci \''+command["Command"] + ' ; exec zsh \'\" &')
+    else:
+        cmd = str('nohup zsh -ci \''+command["Command"] + ' ; exec zsh \' &')
+
     print cmd 
     os.system(cmd)
 

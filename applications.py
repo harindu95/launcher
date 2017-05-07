@@ -98,7 +98,7 @@ def query(txt):
             else:
                 results.append(app)
 
-    return results[:5]
+    return results
 
 def execute(app):
     import os

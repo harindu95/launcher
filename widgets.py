@@ -61,7 +61,7 @@ class ResultWidget(QWidget):
         else:
             self.setStyleSheet("background-color:#ffffff")
 
-    def execute(self):
+    def execute(self,**kwargs):
         if self.result['Type'] == "applications":
             import applications
             applications.execute(self.result)
@@ -69,7 +69,7 @@ class ResultWidget(QWidget):
 
         elif self.result['Type'] == "terminal":
             import terminal
-            terminal.execute(self.result)
+            terminal.execute(self.result,**kwargs)
         elif self.result['Type'] == "web":
             import web
             web.execute(self.result)
