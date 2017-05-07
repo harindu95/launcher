@@ -36,7 +36,10 @@ class ResultWidget(QWidget):
         self.label1.setStyleSheet("font-weight:normal;font-style:normal;font-style:normal;font-family:DejaVu Sans;font-weight: 200;font-size:20px;")
         self.label2.setStyleSheet("font-weight:normal;font-style:normal;font-style:normal;font-family:DejaVu Sans;font-weight: 100;font-size:12px;")
         self.setStyleSheet("padding:3px;margin:0;background:#ffffff")
+        self.connect(self,SIGNAL('mouseClicked'),self.execute)
 
+    def mousePressEvent(self,event):
+        self.execute()
         
     def changeItem(self,result,selected=False):
         self.result = result
@@ -70,4 +73,7 @@ class ResultWidget(QWidget):
         elif self.result['Type'] == "web":
             import web
             web.execute(self.result)
+        elif self.result['Type'] == "file":
+            import file
+            file.execute(self.result)
 

@@ -4,35 +4,40 @@
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-import applications,terminal,web
+import applications,terminal,web,file
 from widgets import *
 
 # from MyLayout import *
 class GenericWorker(QObject):
+    start = pyqtSignal(str)
+
     def __init__(self, function, *args, **kwargs):
         super(GenericWorker, self).__init__()
 
         self.function = function
         self.args = args
         self.kwargs = kwargs
+
+    def connect_(self):
         self.start.connect(self.run)
 
-    start = pyqtSignal(str)
 
     # @pyqtSlot
     def run(self, some_string_arg):
         self.function(*self.args, **self.kwargs)
 
 def getResults(w,txt):
-    results = {}
-    if str(txt).strip() == "" :
+    
+    print "\nplug:", QThread.currentThreadId()
+    results = []
+    txt = str(txt)
+    if txt.strip() == "" :
         w.bg_thread.emit(SIGNAL('update'), results)
     else:
         results= applications.query(txt)
         results.append(terminal.query(txt))
         results.append(web.query(txt))
-
-        w.bg_thread.emit(SIGNAL('update'), results)
+        w.bg_thread.emit(SIGNAL('update'), results,"plugins")
 
 
     
@@ -42,12 +47,24 @@ class LauncherWindow(QWidget):
         super(QWidget,self).__init__()
         self.initUi()
         self.searchBox.textChanged.connect(self.textChanged)
+        self.plugins = []
+        self.files = []
         self.bg_thread = QThread()
+        self.bg_thread2 = QThread()
         self.bg_thread.start()
-        self.bg_thread.connect(self.bg_thread, SIGNAL("update"), self.updateUi )
+        self.bg_thread2.start()
+        self.bg_thread.connect(self.bg_thread, SIGNAL("update"), self.setResults )
+        self.bg_thread2.connect(self.bg_thread2, SIGNAL("update"), self.setResults )
         self.connect(self.searchBox,SIGNAL('focusOut'),self.focusOutEvent)
         
-    
+    def setResults(self,results,Type=None):
+        if Type == "plugins":
+            self.plugins = results
+        elif Type == "files":
+            self.files = results
+            
+        self.updateUi()
+        
     def initUi(self):
         self.center()
         self.searchBox = myLineEdit()
@@ -55,10 +72,10 @@ class LauncherWindow(QWidget):
         # self.setStyleSheet("*{ border:1px solid black; }")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.searchBox)
-        self.results = [ResultWidget() for x in range(5)]
+        self.items = [ResultWidget() for x in range(5)]
         self.visibleResults = 0
         self.selected = 0
-        for label in self.results:
+        for label in self.items:
             label.hide()
             self.layout.addWidget(label)
 
@@ -70,23 +87,28 @@ class LauncherWindow(QWidget):
         self.move(QApplication.desktop().screen().rect().center()- self.rect().center())
 
     def textChanged(self, text):
+        print "gui :", QThread.currentThreadId()
+
         wk = GenericWorker(getResults, self,text)
+        wk.connect_()
         wk.moveToThread(self.bg_thread)
         wk.start.emit(text)
+        if str(text).startswith("file:") and str(text).endswith(" "):
+            file.query(self,text[5:])
 
-    def updateUi(self,results):
+    def updateUi(self):
+
+        results =  self.plugins + self.files
 
         l = len(results)
-
-       
-
+        print l
         self.selected = 0
         for i in range(5):
             if i < l :
-                self.results[i].changeItem(results[i],i==self.selected)
-                self.results[i].show()
+                self.items[i].changeItem(results[i],i==self.selected)
+                self.items[i].show()
             elif i>=l or l == 0:
-                self.results[i].hide()
+                self.items[i].hide()
 
         if self.visibleResults > l:
             self.adjustSize()
@@ -96,7 +118,7 @@ class LauncherWindow(QWidget):
 
     def selectItem(self):
         for i in range(5):
-            self.results[i].selectItem(i==self.selected)
+            self.items[i].selectItem(i==self.selected)
             
     def keyPressEvent(self,event):
         # Escape key
@@ -114,7 +136,7 @@ class LauncherWindow(QWidget):
 
         # enter key
         if event.key() == 0x01000004 :
-            self.results[self.selected].execute()
+            self.items[self.selected].execute()
             self.close()
 
     def focusOutEvent(self,event):
@@ -132,6 +154,7 @@ w.show()
 # w.size(QSize(400,400))
 a.exec_()
 w.bg_thread.quit()
+w.bg_thread2.quit()
 a.exit()
 
 # chrome = applications.extractData(open('/usr/share/applications/google-chrome.desktop').readlines())
