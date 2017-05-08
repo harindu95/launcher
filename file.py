@@ -59,7 +59,7 @@ def searchFiles(w,txt):
         result['Icon'] = get_mimetype_icon(mimetype or 'document')
         results.append(result)
 
-    w.bg_thread2.emit(SIGNAL('update'),results,"files")
+    QThread.currentThread().emit(SIGNAL('update'),results,"files")
 
 def execute(file):
     import os

@@ -32,7 +32,7 @@ def getResults(w,txt):
     results = []
     txt = str(txt)
     if len(txt.strip())==0 :
-        w.bg_thread.emit(SIGNAL('update'), results,"all")
+        QThread.currentThread().emit(SIGNAL('update'), results,"all")
     else:
         results += actions.query(txt)
         results += applications.query(txt)
@@ -42,7 +42,7 @@ def getResults(w,txt):
         # results += firefox.query(txt[8:])
         results += firefox.query(txt)
         
-        w.bg_thread.emit(SIGNAL('update'), results,"plugins")
+        QThread.currentThread().emit(SIGNAL('update'), results,"plugins")
 
 
     
@@ -54,12 +54,13 @@ class LauncherWindow(QWidget):
         self.searchBox.textChanged.connect(self.textChanged)
         self.plugins = []
         self.files = []
-        self.bg_thread = QThread()
-        self.bg_thread2 = QThread()
-        self.bg_thread.start()
-        self.bg_thread2.start()
-        self.bg_thread.connect(self.bg_thread, SIGNAL("update"), self.setResults )
-        self.bg_thread2.connect(self.bg_thread2, SIGNAL("update"), self.setResults )
+        # self.bg_thread = QThread()
+        # self.bg_thread2 = QThread()
+        # self.bg_thread.start()
+        # self.bg_thread2.start()
+        # self.bg_thread.connect(self.bg_thread, SIGNAL("update"), self.setResults )
+        # self.bg_thread2.connect(self.bg_thread2, SIGNAL("update"), self.setResults )
+        self.connect(QThread.currentThread(), SIGNAL("update"), self.setResults )
         self.connect(self.searchBox,SIGNAL('focusOut'),self.focusOutEvent)
         
     def setResults(self,results,Type=None):
@@ -104,7 +105,7 @@ class LauncherWindow(QWidget):
         
         wk = GenericWorker(getResults, self,text)
         wk.connect_()
-        wk.moveToThread(self.bg_thread)
+        wk.moveToThread(QThread.currentThread())
         wk.start.emit(text)
         if str(text).startswith("file:") and str(text).endswith(" "):
             file.query(self,text[5:])
@@ -191,8 +192,8 @@ w.show()
 # w.setWindowState( Qt.WindowFullScreen)
 # w.size(QSize(400,400))
 a.exec_()
-w.bg_thread.quit()
-w.bg_thread2.quit()
+# w.bg_thread.quit()
+# w.bg_thread2.quit()
 a.exit()
 
 # chrome = applications.extractData(open('/usr/share/applications/google-chrome.desktop').readlines())
