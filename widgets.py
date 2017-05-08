@@ -77,3 +77,9 @@ class ResultWidget(QWidget):
             import file
             file.execute(self.result)
 
+        elif self.result['Type'] == "actions":
+            import actions
+            actions.execute(self.result)
+        elif self.result['Type'] == "firefox":
+            import firefox
+            firefox.execute(self.result)

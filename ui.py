@@ -4,7 +4,7 @@
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-import applications,terminal,web,file
+import applications,terminal,web,file,actions,firefox
 from widgets import *
 
 # from MyLayout import *
@@ -34,9 +34,14 @@ def getResults(w,txt):
     if len(txt.strip())==0 :
         w.bg_thread.emit(SIGNAL('update'), results,"all")
     else:
-        results= applications.query(txt)
+        results += actions.query(txt)
+        results += applications.query(txt)
         results.append(terminal.query(txt))
         results.append(web.query(txt))
+        # if txt.startswith('firefox:'):
+        # results += firefox.query(txt[8:])
+        results += firefox.query(txt)
+        
         w.bg_thread.emit(SIGNAL('update'), results,"plugins")
 
 
@@ -165,9 +170,9 @@ class LauncherWindow(QWidget):
         # enter key
         if event.key() == 0x01000004 :
             if event.matches(QKeySequence.InsertLineSeparator):
-                self.items[self.selected].execute(shift=True)
+                self.items[self.selected- self.visibleStart].execute(shift=True)
             else:           
-                self.items[self.selected].execute()
+                self.items[self.selected - self.visibleStart].execute()
 
             self.close()
 

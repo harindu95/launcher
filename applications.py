@@ -75,25 +75,30 @@ def icon_fullpath(icon):
 
 apps = []
 
+def checkTerms(terms,txt):
+    for term in terms:
+        if not term in txt:
+            return False
+    return True
 
 def query(txt):
     global apps
-    import re
+    # import re
     results = []
     if len(apps) == 0 :
         apps = getLaunchers()
         
     txt = str(txt).lower()
     terms = txt.split(" ")
-    pattern ='.*'+'.*'.join(terms)
-    pattern = re.compile(pattern)
+    # pattern ='.*'+'.*'.join(terms)
+    # pattern = re.compile(pattern)
     # widget =  QWidget()
     for app in apps:
         # "Exec":'','Icon':'','Comment':'' 
         info = app['Name'] + app['Exec'] + app['Comment']
         info = info.lower()
-        if pattern.match(info):
-            if pattern.match(app['Name'].lower()):
+        if checkTerms(terms,info):
+            if txt in app['Name'].lower():
                 results.insert(0,app)
             else:
                 results.append(app)
