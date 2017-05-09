@@ -45,14 +45,24 @@ def searchFiles(w,txt):
     findCMD = 'locate ' + str(txt)
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    i = 0
+    
+# Check if the process has really terminated & force kill if not.
     filelist = []
+    i = 0
     for line in iter(out.stdout.readline,''):
         i += 1
         filelist.append(line.replace('\n',''))
         if i == 30:
-            out.kill()
             break
+
+    pid = out.pid
+    out.terminate()
+    try:
+        os.kill(pid, 0)
+        out.kill()
+        print "Forced kill"
+    except OSError, e:
+        print "Terminated gracefully"
         # Save found files to list
 
     results = []
