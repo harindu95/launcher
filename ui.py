@@ -82,7 +82,8 @@ class LauncherWindow(QWidget):
         self.center()
         self.searchBox = myLineEdit()
         self.searchBox.setStyleSheet("margin:3px;border:none;font-size:36px;font-style:normal;font-family:DejaVu Sans;font-weight: 200;")
-        # self.setStyleSheet("*{ border:1px solid black; }")
+        self.setObjectName("main")
+        self.setStyleSheet("QWidget#main{border:1px solid #CCCCCC;}")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.searchBox)
         self.items = [ResultWidget() for x in range(5)]
