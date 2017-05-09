@@ -2,3 +2,4 @@
 /nohup.out
 /file.py~
 *.py~
+/testThread.py

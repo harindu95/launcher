@@ -4,7 +4,7 @@ def query(txt):
                 { 'Name': "Vlc Next" ,'Comment':'Play next track' ,'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next" , 'Icon' :'',"Type":"actions"},
                 { 'Name': "Vlc Prev" ,'Comment':'Play previous track', 'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.previous" , 'Icon' :'',"Type":"actions"},
                 { 'Name': "Vlc Play/Pause" ,'Comment':'Play/Pause the track', 'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause" ,'Icon':"","Type":"actions"}
-                ,{ 'Name': "Shutdown" ,'Comment':'Power off the machine' ,'cmd' : 'sysystemctl poweroff' , 'Icon':applications.icon_fullpath('system-shutdown'),"Type":"actions"},
+                ,{ 'Name': "Shutdown" ,'Comment':'Power off the machine' ,'cmd' : 'systemctl poweroff' , 'Icon':applications.icon_fullpath('system-shutdown'),"Type":"actions"},
     ]
 
     txt = txt.lower().replace(' ','')

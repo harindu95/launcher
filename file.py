@@ -13,9 +13,12 @@ class GenericWorker(QObject):
         self.args = args
         self.kwargs = kwargs
 
-    # @pyqtSlot()
-    def run(self, args):
-        print "files: query" 
+    def connect_and_emit(self):
+        self.start.connect(self.run)
+        self.start.emit("")
+
+    @pyqtSlot()
+    def run(self,args=None):
         self.function(*self.args, **self.kwargs)
         
 def get_mimetype_icon(mimetype):
@@ -30,15 +33,15 @@ def get_mimetype_icon(mimetype):
 
 def query(w,txt):
     txt = txt.replace(' ','')
-    wk = GenericWorker(searchFiles, w,txt)
-    wk.moveToThread(QThread.currentThread())
-    # wk.moveToThread(w.bg_thread2)
-    wk.start.connect(wk.run)
-    wk.start.emit("start")
+    w.wk = GenericWorker(searchFiles, w,txt)
+    w.bg_thread2.start()
+    w.wk.moveToThread(w.bg_thread2)
+    w.wk.connect_and_emit()
     return True
 
 
 def searchFiles(w,txt):
+    print "file search:" , QThread.currentThreadId()
     findCMD = 'locate ' + str(txt)
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
