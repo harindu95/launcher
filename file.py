@@ -33,8 +33,13 @@ def get_mimetype_icon(mimetype):
 
 def query(w,txt):
     txt = txt.replace(' ','')
+    try:
+        w.wk.terminate = True
+    except AttributeError:
+        pass
+    
     w.wk = GenericWorker(searchFiles, w,txt)
-    w.bg_thread2.start()
+    w.wk.terminate = False
     w.wk.moveToThread(w.bg_thread2)
     w.wk.connect_and_emit()
     return True
@@ -42,18 +47,18 @@ def query(w,txt):
 
 def searchFiles(w,txt):
     print "file search:" , QThread.currentThreadId()
-    findCMD = 'locate ' + str(txt)
+    findCMD = 'locate -l 30 ' + str(txt)
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     
 # Check if the process has really terminated & force kill if not.
     filelist = []
     i = 0
-    for line in iter(out.stdout.readline,''):
-        i += 1
-        filelist.append(line.replace('\n',''))
-        if i == 30:
-            break
+    filelist = out.stdout.readlines()
+    # i += 1
+    # filelist.append(line.replace('\n',''))
+    # if i == 30 or w.wk.terminate:
+    #     break
 
     pid = out.pid
     out.terminate()

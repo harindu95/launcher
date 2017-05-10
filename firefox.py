@@ -16,13 +16,15 @@ def checkTerms(terms,txt):
             return False
     return True
 
-def query(txt):
+def query(w,txt):
     txt = txt.lower()
     terms = txt.split(' ')
     results = []
     if history  == None:
         get_history()
     for line in history:
+        if w.wk1.terminate:
+            break
         if checkTerms(terms,str(line[0]).lower()) :
             results.append({'Name':line[0],'Comment':'','Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
 

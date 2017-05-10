@@ -36,8 +36,8 @@ def getResults(w,txt):
         QThread.currentThread().emit(SIGNAL('update'), results,"all")
     else:
         results += actions.query(txt)
-        results += applications.query(txt)
-        results += firefox.query(txt)
+        results += applications.query(w,txt)
+        results += firefox.query(w,txt)
         results.append(terminal.query(txt))
         results.append(web.query(txt))
         # if txt.startswith('firefox:'):
@@ -104,8 +104,13 @@ class LauncherWindow(QWidget):
         
     def textChanged(self, text):
         # print "gui :", QThread.currentThreadId()
+        try:
+            self.wk1.terminate = True
+        except AttributeError:
+            pass
         
         self.wk1 = GenericWorker(getResults, self,text)
+        self.wk1.terminate = False
         self.wk1.moveToThread(self.bg_thread)
         self.wk1.connect_()
         self.wk1.start.emit(text)

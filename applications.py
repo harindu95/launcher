@@ -81,7 +81,7 @@ def checkTerms(terms,txt):
             return False
     return True
 
-def query(txt):
+def query(w,txt):
     global apps
     # import re
     results = []
@@ -97,6 +97,8 @@ def query(txt):
         # "Exec":'','Icon':'','Comment':'' 
         info = app['Name'] + app['Exec'] + app['Comment']
         info = info.lower()
+        if w.wk1.terminate:
+            break
         if checkTerms(terms,info):
             if txt in app['Name'].lower():
                 results.insert(0,app)
