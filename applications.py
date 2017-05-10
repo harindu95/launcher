@@ -78,6 +78,7 @@ apps = []
 def checkTerms(terms,txt):
     for term in terms:
         if not term in txt:
+            # print txt,terms
             return False
     return True
 
@@ -87,8 +88,8 @@ def query(w,txt):
     results = []
     if len(apps) == 0 :
         apps = getLaunchers()
-        
-    txt = str(txt).lower()
+
+    txt = txt.lower()
     terms = txt.split(" ")
     # pattern ='.*'+'.*'.join(terms)
     # pattern = re.compile(pattern)

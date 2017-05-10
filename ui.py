@@ -31,8 +31,7 @@ def getResults(w,txt):
     # print "\nplug:", QThread.currentThreadId()
     results = []
     print "plugin :" , QThread.currentThreadId()
-    txt = str(txt)
-    if len(txt.strip())==0 :
+    if txt.strip()=='' :
         QThread.currentThread().emit(SIGNAL('update'), results,"all")
     else:
         results += actions.query(txt)
@@ -109,7 +108,8 @@ class LauncherWindow(QWidget):
         except AttributeError:
             pass
         
-        self.wk1 = GenericWorker(getResults, self,text)
+        self.wk1 = GenericWorker(getResults, self,str(text).split(" "))
+        self.wk1 = GenericWorker(getResults, self,str(text))
         self.wk1.terminate = False
         self.wk1.moveToThread(self.bg_thread)
         self.wk1.connect_()
