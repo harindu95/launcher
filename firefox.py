@@ -26,7 +26,7 @@ def query(w,txt):
         if w.wk1.terminate:
             break
         if checkTerms(terms,str(line[0]).lower()) :
-            results.append({'Name':line[0],'Comment':'','Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
+            results.append({'Name':line[0],'Comment':line[0],'Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
 
     return results
 
