@@ -2,15 +2,18 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import functools
 import os
+import cPickle as pickle
+import os.path
 
 
 def getLaunchers():
     apps = []
+    import codecs
     for filename in os.listdir('/usr/share/applications'):
         try:
             if not '.desktop' in filename:
                 continue
-            with  open('/usr/share/applications/' + filename,'r') as file:
+            with  codecs.open('/usr/share/applications/' + filename,'r',"utf-8") as file:
                 text = file.readlines()
                 try:
                     launcher=  extractData(text)
@@ -36,11 +39,13 @@ def getLaunchers():
                     print e
         except IOError:
             pass
+
+        
     return apps
 
 def extractData(txt):
     
-    app = {"Exec":'','Icon':'','Comment':'','Name':"","Type":"applications" }
+    app = {"Info":"","Exec":'','Icon':'','Comment':'','Name':"","Type":"applications" }
     for line in txt:
         if line.strip().startswith('#'):
             continue
@@ -50,7 +55,13 @@ def extractData(txt):
         elif 'Comment' in line and app['Comment']=='' :
             app['Comment'] = line[line.index('=')+1:].replace('\n','')
         elif 'Exec' in line and not app['Exec']:
-            app['Exec'] = line[line.index('=')+1:].replace('\n','').replace('%u','')
+            app['Exec'] = line[line.index('=')+1:].replace('\n','')
+            try:
+                i = app['Exec'].index("%")
+                app['Exec'] = app['Exec'][:i]
+            except Exception:
+                pass
+            
         elif 'Icon' in line:
             app['Icon'] = icon_fullpath(line[line.index('=')+1:].replace('\n',''))
 
@@ -82,33 +93,86 @@ def checkTerms(terms,txt):
             return False
     return True
 
-def query(w,txt):
+def terminalCommands():
+    import subprocess
+    apps = []
+    CMD = "zsh -ci \'print -rl -- ${(ko)commands}\'"    
+    out = subprocess.Popen(CMD,shell=True,stdin=subprocess.PIPE, 
+                           stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    out.wait()
+    commands = out.stdout.readlines()
+    for cmd in commands:
+        # print cmd
+        cmd = cmd.replace('\n','')
+        apps.append({"Exec":cmd,'Icon':icon_fullpath('binary'),'Comment':'','Name':cmd,"Type":"applications" })
+
+
+    return apps
+
+pickle_name = "/home/harindu/projects/launcher/apps.dump"
+refresh =False
+
+def load_pickle():
     global apps
-    # import re
+    if os.path.isfile(pickle_name) :
+        changed = os.path.getmtime(pickle_name)
+        import calendar,time
+        current = calendar.timegm(time.gmtime())
+        if current - changed < 86500 :
+            apps = pickle.load(open(pickle_name,"rb"))
+
+def query(w,txt):
+    global apps,refresh
+    import re
     results = []
+    firsts = []
+    dump_pickle = True
     if len(apps) == 0 :
-        apps = getLaunchers()
+        if os.path.isfile(pickle_name) :
+            changed = os.path.getmtime(pickle_name)
+            import calendar,time
+            current = calendar.timegm(time.gmtime())
+            if current - changed < 86500 :
+                apps = pickle.load(open(pickle_name,"rb"))
+                dump_pickle =False
+
+    if (len (apps) == 0 and dump_pickle) or refresh:        
+        apps =  getLaunchers() + terminalCommands()
+        print "refresh applications"
+        pickle.dump(apps,open(pickle_name,"wb"))
+        refresh = False
 
     txt = txt.lower()
     terms = txt.split(" ")
-    # pattern ='.*'+'.*'.join(terms)
-    # pattern = re.compile(pattern)
+    pattern ='.*'+'.*'.join([c for c in txt])
+    pattern = re.compile(pattern)
     # widget =  QWidget()
     for app in apps:
         # "Exec":'','Icon':'','Comment':'' 
         info = app['Name'] + app['Exec'] + app['Comment']
         info = info.lower()
-        if w.wk1.terminate:
-            break
-        if checkTerms(terms,info):
+        # if w.wk1.terminate:
+        # break
+        if re.match(pattern,info):
             if txt in app['Name'].lower():
-                results.insert(0,app)
+                firsts.append(app)
             else:
                 results.append(app)
+                # return [app for app in apps if re.match(pattern,app['Info'])]
+    return firsts + results
 
-    return results
+
 
 def execute(app):
     import os
     # Popen(app['Exec'] + " &")
-    os.system('nohup ' + app["Exec"] + ' & ')
+    if app["Exec"].startswith('/'):
+        os.system('nohup ' + app["Exec"] + ' &')
+    else:
+        # print cmd
+        # p= subprocess.Popen(["/usr/bin/nohup","zsh","-ci",app["Exec"]," &"])
+        # os.spawn*(cmd)
+        os.execv("/usr/bin/zsh",["zsh","-ci",app["Exec"]])
+
+if __name__ == "__main__":
+    print terminalCommands()

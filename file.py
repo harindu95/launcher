@@ -46,7 +46,7 @@ def query(w,txt):
 
 
 def searchFiles(w,txt):
-    print "file search:" , QThread.currentThreadId()
+    # print "file search:" , QThread.currentThreadId()
     findCMD = 'locate -l 30 ' + str(txt)
     out = subprocess.Popen(findCMD,shell=True,stdin=subprocess.PIPE, 
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -72,7 +72,8 @@ def searchFiles(w,txt):
 
     results = []
     for file in filelist:
-        result = { "Name":file,"Comment":"","Path":file,"Type":"file"}
+        file  = file.replace('\n','')
+        result = { "Name":file,"Comment":file,"Path":file,"Type":"file"}
         mimetype = mimetypes.guess_type(file)[0]
         result['Icon'] = get_mimetype_icon(mimetype or 'document')
         results.append(result)
@@ -83,7 +84,7 @@ def execute(file):
     import os
     # Popen(app['Exec'] + " &")
     # x-terminal-emulator -e "zsh -c \"apropos editor; exec zsh\""
-    cmd = str('nohup xdg-open '+ file["Path"] + ' &')
+    cmd = str('nohup xdg-open '+ file["Path"].replace('\n','') + ' &')
     print cmd 
     os.system(cmd)
 

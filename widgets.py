@@ -43,17 +43,17 @@ class ResultWidget(QWidget):
         
     def changeItem(self,result,selected=False):
         self.result = result
-        icon = result['Icon']
-        text = result['Name']
-        self.image = QPixmap(icon).scaled(QSize(48,48),transformMode=Qt.SmoothTransformation)
+        self.image = QPixmap(result['Icon']).scaled(QSize(48,48),transformMode=Qt.SmoothTransformation)
         self.icon.setPixmap(self.image)
-        self.label1.setText(text)
+        
+        self.label1.setText(result['Name'])
         self.label2.setText(result['Comment'])
-        self.setMinimumSize(QSize(630, 60))
         if selected:
             self.setStyleSheet("background-color:#eeeeee;")
         else:
             self.setStyleSheet("background-color:#ffffff")
+
+        # self.adjustSize()
 
     def selectItem(self,selected=True):
         if selected:

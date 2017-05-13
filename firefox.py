@@ -5,8 +5,9 @@ def get_history():
     import sqlite3
     conn = sqlite3.connect('/home/harindu/.mozilla/firefox/rq8cz875.default/places.sqlite')
     cursor = conn.cursor()
-    query = 'select p.url from moz_historyvisits as h, moz_places as p where p.id == h.place_id order by h.visit_date desc;'
-    history = list(cursor.execute(query))[:200]
+    query = 'select p.url,p.title from moz_historyvisits as h, moz_places as p where p.id == h.place_id order by h.visit_date desc;'
+    query2 = 'select p.title from moz_historyvisits as h, moz_places as p where p.id == h.place_id order by h.visit_date desc;'
+    history = list(cursor.execute(query))[:400]
 
     conn.close()
     
@@ -25,12 +26,15 @@ def query(w,txt):
     for line in history:
         if w.wk1.terminate:
             break
-        if checkTerms(terms,str(line[0]).lower()) :
-            results.append({'Name':line[0],'Comment':line[0],'Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
+        if checkTerms(terms,str(line[1]).lower()+str(line[0]).lower()) :
+            results.append({'Name':line[1] or '' ,'Comment':line[0] or '' ,'Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
 
     return results
 
 def execute(url):
     import os
-    cmd = 'nohup firefox --new-tab ' + url['Name'] + ' &'
+    cmd = 'nohup firefox --new-tab ' + url['Comment'] + ' &'
     os.system(cmd)
+
+# get_history()
+# print history

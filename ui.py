@@ -31,12 +31,15 @@ def getResults(w,txt):
     # print "\nplug:", QThread.currentThreadId()
     results = []
     print "plugin :" , QThread.currentThreadId()
-    if txt.strip()=='' :
+    if len(txt.strip())==0:
         QThread.currentThread().emit(SIGNAL('update'), results,"all")
+    elif txt.startswith('/') :
+        QThread.currentThread().emit(SIGNAL('update'), results,"plugins")
     else:
         results += actions.query(txt)
         results += applications.query(w,txt)
         results += firefox.query(w,txt)
+
         results.append(terminal.query(txt))
         results.append(web.query(txt))
         # if txt.startswith('firefox:'):
@@ -97,6 +100,7 @@ class LauncherWindow(QWidget):
         self.setFocusPolicy(Qt.StrongFocus)
         self.visibleStart = 0
         self.visibleEnd = 5
+        applications.load_pickle()
         
     def center(self):
         self.move(QApplication.desktop().screen().rect().center()- self.rect().center())
@@ -116,14 +120,18 @@ class LauncherWindow(QWidget):
         self.wk1.start.emit(text)
         # getResults(self,text)
         # if str(text).startswith("file:") and str(text).endswith(" "):
-        file.query(self,text)
-        
+        if len(text) >4 or str(text).startswith('/'):
+            file.query(self,text)
+        if len(self.plugins + self.files) == 0:
+            self.plugins = applications.apps
+            self.updateUi()
+            
     def updateUi(self):
         results =  self.plugins + self.files
-        print "gui:" , QThread.currentThreadId()
+        # print "gui:" , QThread.currentThreadId()
         l = len(results)
         # print l
-        for i in range(5):
+        for i in xrange(5):
             if i < l  and self.visibleStart+i < l:
                 self.items[i].changeItem(results[self.visibleStart+i],i==self.selected)
                 self.items[i].show()
@@ -133,15 +141,16 @@ class LauncherWindow(QWidget):
         if (self.visibleEnd-self.visibleStart) > l:
             self.adjustSize()
 
-        self.visibleEnd = min(5,l)
+        self.visibleEnd = self.visibleStart + min(4,l)
         # print results,self.visibleResults, len(results)
 
     def goDown(self):
         if len(self.files+self.plugins)> self.selected:
                 if self.selected>=5:
-                    self.visibleEnd += 1
-                    self.visibleStart +=1
-                    self.updateUi()
+                    if self.visibleEnd < len(self.plugins+self.files)-1:
+                        self.visibleEnd += 1
+                        self.visibleStart +=1
+                        self.updateUi()
         else:
             self.selected -=1
 
@@ -153,6 +162,7 @@ class LauncherWindow(QWidget):
                 self.visibleEnd -= 1
                 self.visibleStart -=1
                 self.updateUi()
+
             else:
                 self.selected -=1
 
@@ -167,17 +177,17 @@ class LauncherWindow(QWidget):
         if event.key() == 0x01000000:
             self.close()
             # Up key
-        if event.key() == 0x01000013 :
+        elif event.key() == 0x01000013 :
             self.selected = max ( 0, self.selected -1 )
             self.goUp()
 
             # Down key
-        if event.key() == 0x01000015 :
+        elif event.key() == 0x01000015 :
             self.selected = min (len(self.plugins + self.files),self.selected+1)
             self.goDown()
 
         # enter key
-        if event.key() == 0x01000004 :
+        elif event.key() == 0x01000004 :
             if event.matches(QKeySequence.InsertLineSeparator):
                 self.items[self.selected- self.visibleStart].execute(shift=True)
             else:           
@@ -185,19 +195,41 @@ class LauncherWindow(QWidget):
 
             self.close()
 
-            
+        #Tab key
+        elif event.key() == 0x01000001 :
+            self.autoComplete()
+
+        elif event.key() == Qt.Key_F5:
+            applications.refresh = True
+            self.textChanged(self.searchBox.text())
+
+    def autoComplete(self):
+        selected_element = self.items[self.selected-self.visibleStart].label1.text().trimmed()
+        self.searchBox.setText(selected_element)
+
+    def focusNextPrevChild(next):
+        return False
+    
     def focusOutEvent(self,event):
         self.close()
+
+    def getArgsFromOtherInstance(self, args):
+        print "Got message from another instance" ,args
+        self.searchBox.setText("")
+        self.show()
         # pass
 
-# Create an PyQT4 application object.
-a = QApplication(sys.argv)
-# Set window size.
-w = LauncherWindow()
-w.resize(650, 60)
-w.show()
-a.exec_()
-w.bg_thread.quit()
-w.bg_thread2.quit()
-a.exit()
+def runApp():
+    a = QApplication(sys.argv)
+    # Set window size.
+    w = LauncherWindow()
+    w.resize(650, 60)
+    w.show()
+    a.exec_()
+    w.bg_thread.quit()
+    w.bg_thread2.quit()
+    a.exit()
 
+if __name__ == '__main__':
+    # Create an PyQT4 application object.
+    runApp()
