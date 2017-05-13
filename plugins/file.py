@@ -27,7 +27,7 @@ def get_mimetype_icon(mimetype):
     theme = gtk.icon_theme_get_default()
     icon = theme.choose_icon(iconName.get_names(), 48, 0)
     if not icon :
-        return get_mimetype_icon('application/octet-stream')
+        return 'binary'
     
     return icon.get_filename()
 

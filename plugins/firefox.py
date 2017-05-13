@@ -1,4 +1,3 @@
-import applications
 history= None
 def get_history():
     global history
@@ -27,7 +26,7 @@ def query(w,txt):
         if w.wk1.terminate:
             break
         if checkTerms(terms,str(line[1]).lower()+str(line[0]).lower()) :
-            results.append({'Name':line[1] or '' ,'Comment':line[0] or '' ,'Icon':applications.icon_fullpath('firefox'),'Type':'firefox'})
+            results.append({'Name':line[1] or '' ,'Comment':line[0] or '' ,'Icon':'firefox','Type':'firefox'})
 
     return results
 

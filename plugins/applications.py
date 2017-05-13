@@ -63,7 +63,7 @@ def extractData(txt):
                 pass
             
         elif 'Icon' in line:
-            app['Icon'] = icon_fullpath(line[line.index('=')+1:].replace('\n',''))
+            app['Icon'] = line[line.index('=')+1:].replace('\n','')
 
     if app['Exec'] == '':
         print app,txt

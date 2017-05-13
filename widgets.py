@@ -1,6 +1,17 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
+def icon_fullpath(icon):
+    import gtk
+    icon_theme = gtk.icon_theme_get_default()
+    icon_info = icon_theme.lookup_icon(icon, 64, 64)
+    if icon_info == None:
+        if icon.startswith(r'/'):
+                return icon
+        return '/usr/share/icons/Numix/32/status/dialog-question.svg'
+    # print icon_info.get_filename()
+    return icon_info.get_filename()
+
 class myLineEdit(QLineEdit):
     def __init__(self):
         super(QLineEdit,self).__init__()
@@ -43,7 +54,11 @@ class ResultWidget(QWidget):
         
     def changeItem(self,result,selected=False):
         self.result = result
-        self.image = QPixmap(result['Icon']).scaled(QSize(48,48),transformMode=Qt.SmoothTransformation)
+        icon = result['Icon']
+        if not result['Icon'].startswith('//') :
+            icon = icon_fullpath(result['Icon'])
+            
+        self.image = QPixmap(icon).scaled(QSize(48,48),transformMode=Qt.SmoothTransformation)
         self.icon.setPixmap(self.image)
         
         self.label1.setText(result['Name'])
@@ -83,3 +98,4 @@ class ResultWidget(QWidget):
         elif self.result['Type'] == "firefox":
             import firefox
             firefox.execute(self.result)
+

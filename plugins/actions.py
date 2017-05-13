@@ -1,10 +1,9 @@
-import applications
 def query(txt):
-    actions = [ { 'Name': "Suspend" ,'Comment':'Suspend the machine' ,'cmd' : 'systemctl suspend -i' , 'Icon':applications.icon_fullpath('system-suspend'),"Type":"actions"},
+    actions = [ { 'Name': "Suspend" ,'Comment':'Suspend the machine' ,'cmd' : 'systemctl suspend -i' , 'Icon':'system-suspend',"Type":"actions"},
                 { 'Name': "VLC Next" ,'Comment':'Play next track' ,'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next" , 'Icon' :'',"Type":"actions"},
                 { 'Name': "VLC Prev" ,'Comment':'Play previous track', 'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.previous" , 'Icon' :'',"Type":"actions"},
                 { 'Name': "VLC Play/Pause" ,'Comment':'Play/Pause the track', 'cmd':"dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause" ,'Icon':"","Type":"actions"}
-                ,{ 'Name': "Shutdown" ,'Comment':'Power off the machine' ,'cmd' : 'systemctl poweroff' , 'Icon':applications.icon_fullpath('system-shutdown'),"Type":"actions"},
+                ,{ 'Name': "Shutdown" ,'Comment':'Power off the machine' ,'cmd' : 'systemctl poweroff' , 'Icon':'system-shutdown',"Type":"actions"},
     ]
 
     txt = txt.lower().replace(' ','')

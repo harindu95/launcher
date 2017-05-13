@@ -4,7 +4,12 @@
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-import applications,terminal,web,file,actions,firefox
+import plugins.applications
+import plugins.terminal
+import plugins.web
+import plugins.file
+import plugins.actions
+import plugins.firefox
 from widgets import *
 
 # from MyLayout import *
@@ -36,12 +41,12 @@ def getResults(w,txt):
     elif txt.startswith('/') :
         QThread.currentThread().emit(SIGNAL('update'), results,"plugins")
     else:
-        results += actions.query(txt)
-        results += applications.query(w,txt)
-        results += firefox.query(w,txt)
+        results += plugins.actions.query(txt)
+        results += plugins.applications.query(w,txt)
+        results += plugins.firefox.query(w,txt)
 
-        results.append(terminal.query(txt))
-        results.append(web.query(txt))
+        results.append(plugins.terminal.query(txt))
+        results.append(plugins.web.query(txt))
         # if txt.startswith('firefox:'):
         # results += firefox.query(txt[8:])
         # w.setResults(results,"plugins")
@@ -100,7 +105,7 @@ class LauncherWindow(QWidget):
         self.setFocusPolicy(Qt.StrongFocus)
         self.visibleStart = 0
         self.visibleEnd = 5
-        applications.load_pickle()
+        plugins.applications.load_pickle()
         
     def center(self):
         self.move(QApplication.desktop().screen().rect().center()- self.rect().center())
@@ -121,9 +126,9 @@ class LauncherWindow(QWidget):
         # getResults(self,text)
         # if str(text).startswith("file:") and str(text).endswith(" "):
         if len(text) >4 or str(text).startswith('/'):
-            file.query(self,text)
+            plugins.file.query(self,text)
         if len(self.plugins + self.files) == 0:
-            self.plugins = applications.apps
+            self.plugins = plugins.applications.apps
             self.updateUi()
             
     def updateUi(self):
@@ -200,7 +205,7 @@ class LauncherWindow(QWidget):
             self.autoComplete()
 
         elif event.key() == Qt.Key_F5:
-            applications.refresh = True
+            plugins.applications.refresh = True
             self.textChanged(self.searchBox.text())
 
     def autoComplete(self):
