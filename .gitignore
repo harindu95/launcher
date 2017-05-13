@@ -5,3 +5,4 @@
 /testThread.py
 /apps.dump
 *.pyc
+plugins/*.pyc
