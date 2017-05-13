@@ -1,8 +1,7 @@
-import applications
 
 def query(txt):
     result = { "Name":"Web","Comment":"Start search in your browser","Command":txt,"Type":"web"}
-    result['Icon'] = applications.icon_fullpath('browser')
+    result['Icon'] = 'browser'
     return result
 
 def execute(command):

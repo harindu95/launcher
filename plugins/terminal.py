@@ -1,8 +1,7 @@
-import applications
 
 def query(txt):
     result = { "Name":"Terminal","Comment":"Open in Terminal","Command":txt,"Type":"terminal"}
-    result['Icon'] = applications.icon_fullpath('terminal')
+    result['Icon'] = 'terminal'
     return result
 
 def execute(command,shift=False):
