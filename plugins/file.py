@@ -27,7 +27,8 @@ def get_mimetype_icon(mimetype):
     theme = gtk.icon_theme_get_default()
     icon = theme.choose_icon(iconName.get_names(), 48, 0)
     if not icon :
-        return 'binary'
+        print mimetype
+        return None
     
     return icon.get_filename()
 
@@ -75,12 +76,16 @@ def searchFiles(w,txt):
         file  = file.replace('\n','')
         result = { "Name":file,"Comment":file,"Path":file,"Type":"file"}
         mimetype = mimetypes.guess_type(file)[0]
-        result['Icon'] = get_mimetype_icon(mimetype or 'document')
+        if os.path.isdir(file):
+            result['Icon'] = 'folder'
+        else:
+            result['Icon'] = get_mimetype_icon(mimetype or 'unknown')
+            
         results.append(result)
 
     QThread.currentThread().emit(SIGNAL('update'),results,"files")
 
-def execute(file):
+def execute(file,shift=False):
     import os
     # Popen(app['Exec'] + " &")
     # x-terminal-emulator -e "zsh -c \"apropos editor; exec zsh\""

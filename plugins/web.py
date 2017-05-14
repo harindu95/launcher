@@ -4,7 +4,7 @@ def query(txt):
     result['Icon'] = 'browser'
     return [result]
 
-def execute(command):
+def execute(command,shift=False):
     import os
     # Popen(app['Exec'] + " &")
     # x-terminal-emulator -e "zsh -c \"apropos editor; exec zsh\""

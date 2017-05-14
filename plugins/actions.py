@@ -17,7 +17,7 @@ def query(txt):
 
     return results
 
-def execute(cmd):
+def execute(cmd,shift):
     import os
     command = 'nohup ' + cmd['cmd'] + ' &'
     os.system(command)

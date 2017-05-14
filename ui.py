@@ -240,6 +240,7 @@ class LauncherWindow(QWidget):
         # pass
 
 def runApp():
+    QCoreApplication.setAttribute(Qt.AA_X11InitThreads)
     a = QApplication(sys.argv)
     # Set window size.
     w = LauncherWindow()

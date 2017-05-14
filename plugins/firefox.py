@@ -23,9 +23,13 @@ def query(w,txt):
     if history  == None:
         get_history()
     for line in history:
-        if w.wk1.terminate:
-            break
-        if checkTerms(terms,str(line[1]).lower()+str(line[0]).lower()) :
+        try:
+            if w.wk1.terminate:
+                break
+        except AttributeError:
+            pass
+        info = (line[1] or '' )+ (line[0] or '')
+        if checkTerms(terms,info.lower()) :
             results.append({'Name':line[1] or '' ,'Comment':line[0] or '' ,'Icon':'firefox','Type':'firefox'})
 
     return results

@@ -1,23 +1,30 @@
 import os
 import cPickle as pickle
 import os.path
-
+import xdg.DesktopEntry
 
 def getLaunchers():
     apps = []
     import codecs
+    desktop = xdg.DesktopEntry.DesktopEntry()
     for filename in os.listdir('/usr/share/applications'):
         try:
             if not '.desktop' in filename:
                 continue
             with  codecs.open('/usr/share/applications/' + filename,'r',"utf-8") as file:
-                text = file.readlines()
                 try:
-                    launcher=  extractData(text)
+                    desktop.parse('/usr/share/applications/' + filename)
+                    launcher = { 'Name':desktop.getName(),
+                                 'Exec':desktop.getExec().replace('%u','').replace('%U','').replace('%f',''),
+                                 'Comment':desktop.getComment(),
+                                 'Icon':desktop.getIcon() or '',
+                                 'Terminal':desktop.getTerminal(),
+                                 'Type':'applications'}
                     if(launcher):
                         apps.append(launcher)
-                        
-                except ValueError,e:
+                    if 'nautilus' in filename.lower():
+                        print launcher
+                except Exception,e:
                     print e
         except IOError:
             pass
@@ -27,9 +34,14 @@ def getLaunchers():
 
         try:
             with  open('/home/harindu/.local/share/applications/' + filename,'r') as file:
-                text = file.readlines()
                 try:
-                    launcher=  extractData(text)
+                    desktop.parse('/home/harindu/.local/share/applications/' + filename)
+                    launcher = { 'Name':desktop.getName(),
+                                 'Exec':desktop.getExec(),
+                                 'Comment':desktop.getComment(),
+                                 'Icon':desktop.getIcon() or '',
+                                 'Terminal':desktop.getTerminal(),
+                                 'Type':'applications'}
                     if(launcher):
                         apps.append(launcher)
                 except ValueError,e:
@@ -40,46 +52,6 @@ def getLaunchers():
         
     return apps
 
-def extractData(txt):
-    
-    app = {"Info":"","Exec":'','Icon':'','Comment':'','Name':"","Type":"applications" }
-    for line in txt:
-        if line.strip().startswith('#'):
-            continue
-        elif 'Name' in line and app['Name'] == "":
-            app['Name'] = line[line.index('=')+1:].replace('\n','')
-            
-        elif 'Comment' in line and app['Comment']=='' :
-            app['Comment'] = line[line.index('=')+1:].replace('\n','')
-        elif 'Exec' in line and not app['Exec']:
-            app['Exec'] = line[line.index('=')+1:].replace('\n','')
-            try:
-                i = app['Exec'].index("%")
-                app['Exec'] = app['Exec'][:i]
-            except Exception:
-                pass
-            
-        elif 'Icon' in line:
-            app['Icon'] = line[line.index('=')+1:].replace('\n','')
-
-    if app['Exec'] == '':
-        print app,txt
-        return None
-
-    return app
-
-def icon_fullpath(icon):
-    import gtk
-    
-    icon_theme = gtk.icon_theme_get_default()
-    icon_info = icon_theme.lookup_icon(icon, 64, 64)
-    
-    if icon_info == None:
-        if icon.startswith(r'/'):
-            return icon
-        return '/usr/share/icons/Numix/32/status/dialog-question.svg'
-    # print icon_info.get_filename()
-    return icon_info.get_filename()
 
 apps = []
 
@@ -101,7 +73,7 @@ def terminalCommands():
     for cmd in commands:
         # print cmd
         cmd = cmd.replace('\n','')
-        apps.append({"Exec":cmd,'Icon':icon_fullpath('binary'),'Comment':'','Name':cmd,"Type":"applications" })
+        apps.append({"Exec":cmd,'Icon':'binary','Comment':'','Name':cmd,"Type":"applications" })
 
 
     return apps
@@ -125,13 +97,8 @@ def query(w,txt):
     firsts = []
     dump_pickle = True
     if len(apps) == 0 :
-        if os.path.isfile(pickle_name) :
-            changed = os.path.getmtime(pickle_name)
-            import calendar,time
-            current = calendar.timegm(time.gmtime())
-            if current - changed < 86500 :
-                apps = pickle.load(open(pickle_name,"rb"))
-                dump_pickle =False
+        apps = pickle.load(open(pickle_name,"rb"))
+        dump_pickle =False
 
     if (len (apps) == 0 and dump_pickle) or refresh:        
         apps =  getLaunchers() + terminalCommands()
@@ -172,6 +139,7 @@ def query(w,txt):
 def execute(app,shift=False):
     import os
     # Popen(app['Exec'] + " &")
+    print app['Exec']
     if shift:
         cmd = str('nohup x-terminal-emulator -e \"zsh -ci \''+app['Exec'] + ' ; exec zsh \'\" &')
         os.system(cmd)
