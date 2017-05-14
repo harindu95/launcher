@@ -169,10 +169,13 @@ def query(w,txt):
 
 
 
-def execute(app):
+def execute(app,shift=False):
     import os
     # Popen(app['Exec'] + " &")
-    if app["Exec"].startswith('/'):
+    if shift:
+        cmd = str('nohup x-terminal-emulator -e \"zsh -ci \''+app['Exec'] + ' ; exec zsh \'\" &')
+        os.system(cmd)
+    elif app["Exec"].startswith('/'):
         os.system('nohup ' + app["Exec"] + ' &')
     else:
         # print cmd

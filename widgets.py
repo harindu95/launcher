@@ -78,7 +78,7 @@ class ResultWidget(QWidget):
             self.setStyleSheet("background-color:#ffffff")
 
     def execute(self,**kwargs):
-        self.plugin_list[self.result['Type']].execute(self.result,kwarg)
+        self.plugin_list[self.result['Type']].execute(self.result,kwargs)
         # if self.result['Type'] == "applications":
         #     import plugins.applications
         #     plugins.applications.execute(self.result)

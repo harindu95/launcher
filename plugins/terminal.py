@@ -1,5 +1,8 @@
 
 def query(txt):
+    if txt.startswith('>'):
+        txt = txt[1:]
+
     result = { "Name":"Terminal","Comment":"Open in Terminal","Command":txt,"Type":"terminal"}
     result['Icon'] = 'terminal'
     return [result]
