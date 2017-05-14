@@ -2,7 +2,7 @@
 def query(txt):
     result = { "Name":"Web","Comment":"Start search in your browser","Command":txt,"Type":"web"}
     result['Icon'] = 'browser'
-    return result
+    return [result]
 
 def execute(command):
     import os

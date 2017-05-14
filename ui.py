@@ -30,6 +30,13 @@ class GenericWorker(QObject):
     # @pyqtSlot
     def run(self, some_string_arg):
         self.function(*self.args, **self.kwargs)
+        
+plugin_list = {"applications":plugins.applications,
+               "terminal":plugins.terminal,
+               "web":plugins.web,
+               "file":plugins.file,
+               "actions":plugins.actions,
+               "firefox":plugins.firefox}
 
 def getResults(w,txt):
     
@@ -45,8 +52,8 @@ def getResults(w,txt):
         results += plugins.applications.query(w,txt)
         results += plugins.firefox.query(w,txt)
 
-        results.append(plugins.terminal.query(txt))
-        results.append(plugins.web.query(txt))
+        results += plugins.terminal.query(txt)
+        results += plugins.web.query(txt)
         # if txt.startswith('firefox:'):
         # results += firefox.query(txt[8:])
         # w.setResults(results,"plugins")
@@ -93,7 +100,7 @@ class LauncherWindow(QWidget):
         self.setStyleSheet("QWidget#main{border:1px solid #CCCCCC;}")
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.searchBox)
-        self.items = [ResultWidget() for x in range(5)]
+        self.items = [ResultWidget(plugin_list) for x in range(5)]
         self.visibleResults = 0
         self.selected = 0
         for label in self.items:
@@ -150,6 +157,7 @@ class LauncherWindow(QWidget):
         # print results,self.visibleResults, len(results)
 
     def goDown(self):
+        self.selected = min (len(self.plugins + self.files),self.selected+1)
         if len(self.files+self.plugins)> self.selected:
                 if self.selected>=5:
                     if self.visibleEnd < len(self.plugins+self.files)-1:
@@ -162,6 +170,7 @@ class LauncherWindow(QWidget):
         self.selectItem()
 
     def goUp(self):
+        self.selected = max ( 0, self.selected -1 )
         if self.selected<self.visibleStart:
             if len(self.files+self.plugins)> self.selected:
                 self.visibleEnd -= 1
@@ -183,12 +192,10 @@ class LauncherWindow(QWidget):
             self.close()
             # Up key
         elif event.key() == 0x01000013 :
-            self.selected = max ( 0, self.selected -1 )
             self.goUp()
 
             # Down key
         elif event.key() == 0x01000015 :
-            self.selected = min (len(self.plugins + self.files),self.selected+1)
             self.goDown()
 
         # enter key
@@ -208,8 +215,16 @@ class LauncherWindow(QWidget):
             plugins.applications.refresh = True
             self.textChanged(self.searchBox.text())
 
+        elif event.key() == Qt.Key_PageDown:
+            for x in xrange(5):
+                self.goDown()
+
+        elif event.key() == Qt.Key_PageUp:
+            for x in xrange(5):
+                self.goUp()
+
     def autoComplete(self):
-        selected_element = self.items[self.selected-self.visibleStart].label1.text().trimmed()
+        selected_element = self.items[self.selected-self.visibleStart].lblName.text().trimmed()
         self.searchBox.setText(selected_element)
 
     def focusNextPrevChild(next):

@@ -1,6 +1,3 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-import functools
 import os
 import cPickle as pickle
 import os.path
@@ -144,15 +141,24 @@ def query(w,txt):
 
     txt = txt.lower()
     terms = txt.split(" ")
-    pattern ='.*'+'.*'.join([c for c in txt])
+    pattern = ".*"
+    for index,term in enumerate(terms):
+        pattern += "[^\s]*".join([c for c in term])
+        pattern += ".*\s?"
+
+        
+    pattern += ".*"
+    # pattern ='.*'+'.*'.join([c for c in txt])
     pattern = re.compile(pattern)
     # widget =  QWidget()
+    # "Exec":'','Icon':'','Comment':'' 
     for app in apps:
         # "Exec":'','Icon':'','Comment':'' 
-        info = app['Name'] + app['Exec'] + app['Comment']
+        info = " " + app['Name'] + ' ' + app['Comment']
         info = info.lower()
         # if w.wk1.terminate:
         # break
+
         if re.match(pattern,info):
             if txt in app['Name'].lower():
                 firsts.append(app)

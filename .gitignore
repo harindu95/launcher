@@ -5,4 +5,5 @@
 /testThread.py
 /apps.dump
 *.pyc
-plugins/*.pyc
+/plugins/*.pyc
+/plugins/nohup.out

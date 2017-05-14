@@ -2,7 +2,7 @@
 def query(txt):
     result = { "Name":"Terminal","Comment":"Open in Terminal","Command":txt,"Type":"terminal"}
     result['Icon'] = 'terminal'
-    return result
+    return [result]
 
 def execute(command,shift=False):
     import os
